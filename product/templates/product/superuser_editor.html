@@ -1,0 +1,89 @@
+{% load humanize %}
+{% if p %}
+<div class="border-top-0 position-absolute" style="opacity: 0.8;">
+    <div class="text-center rounded bg-white" style="top: 0.5rem; left: 0.5rem">
+        {% if user.is_superuser or user.is_authenticated and user == p.author %}
+        <a class="btn btn-outline-primary mt-auto rounded-sm" href="/product/update_product/{{p.pk}}/">
+            <i class="fa-regular fa-pen-to-square"></i><small></small>
+        </a>
+        {% else %}
+        <a class="btn btn-outline-primary mt-auto rounded-sm disabled" href="/product/update_product/{{p.pk}}/" >
+            <i class="fa-regular fa-pen-to-square"></i><small></small>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% if product %}
+<div class="col-md-6 clearfix pl-4 pr-0 pb-4 border border-primary rounded-lg">
+    <a href="/product/update_product/{{product.pk}}/" class="btn btn-primary float-right rounded-0">
+        <i class="fa-regular fa-pen-to-square mr-2" style="opacity: 0.85;"></i>Edit This Product
+    </a>
+    {% if product.category %}
+                        <h6 class="mt-4"><a href="{{product.category.get_absolute_url}}" class="bg-light text-reset text-decoration-none mb-2">
+                            {{product.category|upper}}
+                        </a></h6>
+                        {% else %}
+                        <h6><a href="product/category/no_category/" class="bg-light text-reset text-decoration-none mb-2">
+                            Others
+                        </a></h6>
+                        {% endif %}
+                        <div class="small mb-1"><a href="{{product.company.get_absolute_url}}" class="text-reset text-decoration-none">
+                            {{product.company}}</a></div>
+                        <h1 class="display-5 fw-bolder mr-4" style="opacity: 0.8;">
+                            <a href="/product/update_product/{{product.pk}}/" class="text-reset text-decoration-none">{{product.title}}</a></h1>
+                        <!-- Product reviews-->
+                        {% if product.rating == 5 %}
+                        <div class="d-flex justify-content-left small text-warning mb-2">
+                            <div class="bi-star-fill"></div>
+                            <div class="bi-star-fill"></div>
+                            <div class="bi-star-fill"></div>
+                            <div class="bi-star-fill"></div>
+                            <div class="bi-star-fill"></div>
+                        </div>
+                        {% endif %}
+                        {% if product.hook_text %}
+                        <h6 class="text-muted"><small><mark>{{product.hook_text}}</mark></small></h6>
+                        {% endif %}
+                        <div class="fs-5 mb-5">
+                            {% if product.on_sale_price %}
+                            <span class="text-muted text-decoration-line-through"><del>{{product.product_price|intcomma}} KRW</del></span>
+                            <span>{{product.on_sale_price|intcomma}} KRW</span>
+                            {% else %}
+                            <span>{{product.product_price|intcomma}} KRW</span>
+                            {% endif %}
+                        </div>
+                        {% if product.tags.exists %}
+                        <div class="mb-2">
+                            <i class="fas fa-tag" style="color:#0d6efd"></i>
+                            {% for t in product.tags.iterator %}
+                            <span class="badge badge-pill badge-light">
+                                <a href="{{t.get_absolute_url}}">{{t}}</a>
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <p class="lead mr-4">{{ product.description | linebreaksbr }}</p>
+                        <p class="lead mr-4">{{ product.get_content_markdown | safe | linebreaksbr }}</p>
+                        <div class="d-flex">
+                            {% if user.is_authenticated %}
+                            <form method="post" action="/product/cart/add/{{product.pk}}/" class="d-flex">
+                                {% csrf_token %}
+                                <input class="form-control text-center mr-1" name="inputQuantity" type="num" value="1" style="max-width: 3rem" />
+                                <button class="btn btn-outline-dark flex-shrink-0" type="submit">
+                                    <i class="bi-cart-fill me-1"></i>
+                                    Add to cart
+                                </button>
+                            </form>
+                            {% else %}
+                                <input class="form-control text-center mr-1" type="num" value="1" style="max-width: 3rem" />
+                                <a href="/product/cart/add/" class="btn btn-outline-dark flex-shrink-0" role="button"
+                                    data-toggle="modal" data-target="#loginModal">
+                                    <i class="bi-cart-fill me-1"></i>
+                                    Add to cart
+                                </a>
+                            {% endif %}
+                        </div>
+</div>
+
+{% endif %}

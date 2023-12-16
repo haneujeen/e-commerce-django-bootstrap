@@ -1,0 +1,335 @@
+{% extends 'product/base.html' %}
+{% load humanize %}
+{% block main_area %}
+{% include 'product/header.html' %}
+{% include 'product/sidebar.html' %}
+        <!-- Section-->
+        <section class="py-5" style="background: linear-gradient(white, #efefef);">
+            <div class="container px-4 px-lg-0 mt-5">
+                {% if company %}
+                {% include 'product/company_card.html' %}
+                {% endif %}
+                <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+                    {% if user.is_superuser or user.is_staff %}
+                        {% if user.is_superuser or user.is_staff %}
+                            {% include 'product/superuser_adder_productlist.html' %}
+                        {% endif %}
+                    {% endif %}
+                    {% if product_list.exists %}
+                    {% for p in product_list %}
+                    <div class="col mb-5">
+                        <div class="card h-100">
+                            {% if user.is_superuser or user.is_staff %}
+                                {% include 'product/superuser_editor.html' %}
+                            {% endif %}
+                            <!-- Sale badge-->
+                            <div class="block" style="opacity: 0.85;">
+                                {% if p.on_sale_price and p.additional_feature %}
+                                <div class="badge bg-light position-absolute" style="top: 0.5rem; right: 0.5rem">On Sale!</div>
+                                <div class="badge bg-light position-absolute" style="top: 0.5rem; right: 4.5rem">
+                                {{p.additional_feature}}</div>
+                                {% elif p.on_sale_price %}
+                                <div class="badge bg-light position-absolute" style="top: 0.5rem; right: 0.5rem">On Sale!</div>
+                                {% elif p.additional_feature %}
+                                <div class="badge bg-light position-absolute" style="top: 0.5rem; right: 0.5rem">{{p.additional_feature}}</div>
+                                {% else %}
+                                {% endif %}
+                            </div>
+                            <!-- Product images-->
+                            {% if p.product_image %}
+                            <a href="{{p.get_absolute_url}}">
+                                <img class="card-img-top img-fluid mx-auto mb-2 d-block" style="width: auto; max-height: 280px;" src="{{p.product_image.url}}" alt="{{p}}의 product_image"/>
+                            </a>
+                            {% else %}
+                            <a href="{{p.get_absolute_url}}">
+                                <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
+                            </a>
+                            {% endif %}
+                            <!-- Product details-->
+                            <div class="card-body p-4 pb-0 mb-0">
+                                <div class="text-center">
+                                    <!-- Category -->
+                                    <a href="{{p.category.get_absolute_url}}" class="text-reset text-decoration-none">
+                                        <small class="text-weight-light text-black-50 mt-2">{{p.category}}</small>
+                                    </a><br>
+                                    <!-- Company -->
+                                    <a href="{{p.company.get_absolute_url}}" class="text-reset text-decoration-none">
+                                        <small class="text-weight-light">[ {{p.company}} ]</small>
+                                    </a><br><br>
+                                    <!-- Product name-->
+                                    <a href="{{p.get_absolute_url}}" class="text-reset text-decoration-none">
+                                        <h5 class="fw-bolder">{{p.title}}</h5>
+                                    </a>
+                                    {% if p.tags.exists %}
+                                        <div class="mb-2">
+                                            <i class="fas fa-tag" style="color:#0d6efd"></i>
+                                            {% for t in p.tags.iterator %}
+                                                <span class="badge badge-pill badge-light">
+                                                    <a href="{{t.get_absolute_url}}">{{t}}</a>
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if p.hook_text %}
+                                    <h6 class="text-muted"><small><mark>{{p.hook_text}}</mark></small></h6>
+                                    {% endif %}
+                                    <!-- Product reviews-->
+                                    {% if p.rating == 5 %}
+                                    <div class="d-flex justify-content-center small text-warning mb-2">
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                    </div>
+                                    {% endif %}
+                                    <!-- Product price-->
+                                    <a href="{{p.get_absolute_url}}" class="text-reset text-decoration-none">
+                                    {% if p.on_sale_price %}
+                                    <span class="text-muted text-decoration-line-through"><del>{{p.product_price|intcomma}} KRW</del></span>
+                                    {{p.on_sale_price|intcomma}} KRW
+                                    {% else %}
+                                    {{p.product_price|intcomma}} KRW
+                                    {% endif %}
+                                    </a>
+                                    <div class="d-none d-lg-block mt-3">
+                                        <div class="small text-muted font-weight-light">{{p.description | truncatechars:60 | linebreaksbr}}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Product actions-->
+                            <div class="card-footer pr-4 pl-4 pb-4 pt-1 border-top-0 bg-transparent">
+                                <div class="text-center">
+                                    {% if user.is_authenticated %}
+                                    <form method="post" action="/product/cart/add/{{p.pk}}/">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-outline-dark mt-auto">
+                                        <i class="bi-cart-fill me-1 mr-1"></i>
+                                        Add to cart
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                        <button class="btn btn-outline-dark mt-auto" data-toggle="modal" data-target="#loginModal">
+                                        <i class="bi-cart-fill me-1 mr-1"></i>
+                                        Add to cart
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% elif popular_items.exists %}
+                    {% for p in popular_items %}
+                    <div class="col mb-5">
+                        <div class="card h-100">
+                            {% if user.is_superuser or user.is_staff %}
+                                {% include 'product/superuser_editor.html' %}
+                            {% endif %}
+                            <!-- Sale badge-->
+                            <div class="block" style="opacity: 0.85;">
+                                {% if p.on_sale_price and p.additional_feature %}
+                                <div class="badge bg-light position-absolute" style="top: 0.5rem; right: 0.5rem">On Sale!</div>
+                                <div class="badge bg-light position-absolute" style="top: 0.5rem; right: 4.5rem">
+                                {{p.additional_feature}}</div>
+                                {% elif p.on_sale_price %}
+                                <div class="badge bg-light position-absolute" style="top: 0.5rem; right: 0.5rem">On Sale!</div>
+                                {% elif p.additional_feature %}
+                                <div class="badge bg-light position-absolute" style="top: 0.5rem; right: 0.5rem">{{p.additional_feature}}</div>
+                                {% else %}
+                                {% endif %}
+                            </div>
+                            <!-- Product images-->
+                            {% if p.product_image %}
+                            <a href="{{p.get_absolute_url}}">
+                                <img class="card-img-top img-fluid mx-auto mb-2 d-block" style="width: auto; max-height: 280px;" src="{{p.product_image.url}}" alt="{{p}}의 product_image"/>
+                            </a>
+                            {% else %}
+                            <a href="{{p.get_absolute_url}}">
+                                <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
+                            </a>
+                            {% endif %}
+                            <!-- Product details-->
+                            <div class="card-body p-4 pb-0 mb-0">
+                                <div class="text-center">
+                                    <!-- Category -->
+                                    <a href="{{p.category.get_absolute_url}}" class="text-reset text-decoration-none">
+                                        <small class="text-weight-light text-black-50 mt-2">{{p.category}}</small>
+                                    </a><br>
+                                    <!-- Company -->
+                                    <a href="{{p.company.get_absolute_url}}" class="text-reset text-decoration-none">
+                                        <small class="text-weight-light">[ {{p.company}} ]</small>
+                                    </a><br><br>
+                                    <!-- Product name-->
+                                    <a href="{{p.get_absolute_url}}" class="text-reset text-decoration-none">
+                                        <h5 class="fw-bolder">{{p.title}}</h5>
+                                    </a>
+                                    {% if p.tags.exists %}
+                                        <div class="mb-2">
+                                            <i class="fas fa-tag" style="color:#0d6efd"></i>
+                                            {% for t in p.tags.iterator %}
+                                                <span class="badge badge-pill badge-light">
+                                                    <a href="{{t.get_absolute_url}}">{{t}}</a>
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if p.hook_text %}
+                                    <h6 class="text-muted"><small><mark>{{p.hook_text}}</mark></small></h6>
+                                    {% endif %}
+                                    <!-- Product reviews-->
+                                    {% if p.rating == 5 %}
+                                    <div class="d-flex justify-content-center small text-warning mb-2">
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                    </div>
+                                    {% endif %}
+                                    <!-- Product price-->
+                                    <a href="{{p.get_absolute_url}}" class="text-reset text-decoration-none">
+                                    {% if p.on_sale_price %}
+                                    <span class="text-muted text-decoration-line-through"><del>{{p.product_price|intcomma}} KRW</del></span>
+                                    {{p.on_sale_price|intcomma}} KRW
+                                    {% else %}
+                                    {{p.product_price|intcomma}} KRW
+                                    {% endif %}
+                                    </a>
+                                    <div class="d-none d-lg-block mt-3">
+                                        <div class="small text-muted font-weight-light">{{p.description | truncatechars:60 | linebreaksbr}}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Product actions-->
+                            <div class="card-footer pr-4 pl-4 pb-4 pt-1 border-top-0 bg-transparent">
+                                <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#"><i class="bi-cart-fill me-1 mr-1"></i> Add to cart</a></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% elif new_items.exists %}
+                    {% for p in new_items %}
+                   <div class="col mb-5">
+                        <div class="card h-100">
+                            {% if user.is_superuser or user.is_staff %}
+                                {% include 'product/superuser_editor.html' %}
+                            {% endif %}
+                            <!-- Sale badge-->
+                            <div class="block" style="opacity: 0.85;">
+                                {% if p.on_sale_price and p.additional_feature %}
+                                <div class="badge bg-light position-absolute" style="top: 0.5rem; right: 0.5rem">On Sale!</div>
+                                <div class="badge bg-light position-absolute" style="top: 0.5rem; right: 4.5rem">
+                                {{p.additional_feature}}</div>
+                                {% elif p.on_sale_price %}
+                                <div class="badge bg-light position-absolute" style="top: 0.5rem; right: 0.5rem">On Sale!</div>
+                                {% elif p.additional_feature %}
+                                <div class="badge bg-light position-absolute" style="top: 0.5rem; right: 0.5rem">{{p.additional_feature}}</div>
+                                {% else %}
+                                {% endif %}
+                            </div>
+                            <!-- Product images-->
+                            {% if p.product_image %}
+                            <a href="{{p.get_absolute_url}}">
+                                <img class="card-img-top img-fluid mx-auto mb-2 d-block" style="width: auto; max-height: 280px;" src="{{p.product_image.url}}" alt="{{p}}'s product image"/>
+                            </a>
+                            {% else %}
+                            <a href="{{p.get_absolute_url}}">
+                                <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
+                            </a>
+                            {% endif %}
+                            <!-- Product details-->
+                            <div class="card-body p-4 pb-0 mb-0">
+                                <div class="text-center">
+                                    <!-- Category -->
+                                    <a href="{{p.category.get_absolute_url}}" class="text-reset text-decoration-none">
+                                        <small class="text-weight-light text-black-50 mt-2">{{p.category}}</small>
+                                    </a><br>
+                                    <!-- Company -->
+                                    <a href="{{p.company.get_absolute_url}}" class="text-reset text-decoration-none">
+                                        <small class="text-weight-light">[ {{p.company}} ]</small>
+                                    </a><br><br>
+                                    <!-- Product name-->
+                                    <a href="{{p.get_absolute_url}}" class="text-reset text-decoration-none">
+                                        <h5 class="fw-bolder">{{p.title}}</h5>
+                                    </a>
+                                    {% if p.tags.exists %}
+                                        <div class="mb-2">
+                                            <i class="fas fa-tag" style="color:#0d6efd"></i>
+                                            {% for t in p.tags.iterator %}
+                                                <span class="badge badge-pill badge-light">
+                                                    <a href="{{t.get_absolute_url}}">{{t}}</a>
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if p.hook_text %}
+                                    <h6 class="text-muted"><small><mark>{{p.hook_text}}</mark></small></h6>
+                                    {% endif %}
+                                    <!-- Product reviews-->
+                                    {% if p.rating == 5 %}
+                                    <div class="d-flex justify-content-center small text-warning mb-2">
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                    </div>
+                                    {% endif %}
+                                    <!-- Product price-->
+                                    <a href="{{p.get_absolute_url}}" class="text-reset text-decoration-none">
+                                    {% if p.on_sale_price %}
+                                    <span class="text-muted text-decoration-line-through"><del>{{p.product_price|intcomma}} KRW</del></span>
+                                    {{p.on_sale_price|intcomma}} KRW
+                                    {% else %}
+                                    {{p.product_price|intcomma}} KRW
+                                    {% endif %}
+                                    </a>
+                                    <div class="d-none d-lg-block mt-3">
+                                        <div class="small text-muted font-weight-light">{{p.description | truncatechars:60 | linebreaksbr}}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Product actions-->
+                            <div class="card-footer pr-4 pl-4 pb-4 pt-1 border-top-0 bg-transparent">
+                                <div class="text-center"><a class="btn btn-outline-dark mt-auto" href="#"><i class="bi-cart-fill me-1 mr-1"></i> Add to cart</a></div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <h5 class="text-center mb-5">We're preparing the products.</h5>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Pagination-->
+                <nav aria-label="Pagination">
+                    <ul class="pagination justify-content-center my-5" style="opacity: 0.75;">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item mx-auto p-1 lead">
+                            <a class="page-link text-reset px-4 rounded-lg" href="?page={{page_obj.previous_page_number}}" tabindex="-1" aria-disabled="true">
+                            Newer</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled mx-auto lead" style="opacity: 0.6;">
+                            <a class="page-link px-4 rounded-lg" href="#" tabindex="-1" aria-disabled="true">
+                            Newer</a>
+                        </li>
+                        {% endif %}
+                        {% if page_obj.has_next %}
+                        <li class="page-item mx-auto lead">
+                            <a class="page-link text-reset px-4 rounded-lg" href="?page={{page_obj.next_page_number}}">
+                            Older</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled mx-auto lead" style="opacity: 0.6;">
+                            <a class="page-link px-4 rounded-lg" href="#!">
+                            Older</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+        </section>
+{% endblock %}
+

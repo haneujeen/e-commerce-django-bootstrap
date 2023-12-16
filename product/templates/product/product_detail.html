@@ -1,0 +1,327 @@
+{% extends 'product/base.html' %}
+{% load crispy_forms_tags %}
+{% load humanize %}
+{% block main_area %}
+{% include 'product/sidebar.html' %}
+        <section class="py-5 shadow-lg rounded-lg rounded-bottom bg-white mb-3">
+            <div class="container px-4 px-lg-5 my-5 pb-4">
+                <div class="row gx-4 gx-lg-5 align-items-center">
+                    <div class="col-md-6">
+                        {% if product.product_image and product.detail_image %}
+                        <img id="product_img" class="card-img-top mb-5 mb-md-0 mx-auto" src="{{product.product_image.url}}" alt="{{product}}의 product_image"/>
+                        <img id="detail_img" class="card-img-top mb-5 mb-md-0 mx-auto" src="{{product.detail_image.url}}" alt="{{product}}의 detail_image"/>
+                        {% elif product.product_image %}
+                        <img class="card-img-top mb-5 mb-md-0" src="{{product.product_image.url}}" alt="{{product}}의 product_image"/>
+                        {% else %}
+                        <img class="card-img-top mb-5 mb-md-0" src="https://dummyimage.com/600x700/dee2e6/6c757d.jpg" alt="..." />
+                        {% endif %}
+                    </div>
+                    {% if user.is_superuser or user.is_authenticated and user == product.author %}
+                        {% include 'product/superuser_editor.html' %}
+                    {% else %}
+                    <div class="col-md-6">
+                        {% if product.category %}
+                        <h6><a href="{{product.category.get_absolute_url}}" class="bg-light text-reset text-decoration-none mb-2">
+                            {{product.category|upper}}
+                        </a></h6>
+                        {% else %}
+                        <h6><a href="product/category/no_category/" class="bg-light text-reset text-decoration-none mb-2">
+                            No category existing
+                        </a></h6>
+                        {% endif %}
+                        <div class="small mb-1"><a href="{{product.company.get_absolute_url}}" class="text-reset text-decoration-none">
+                            {{product.company}}</a></div>
+                        <h1 class="display-5 fw-bolder">{{product.title}}</h1>
+                        <!-- Product reviews-->
+                        {% if product.rating == 5 %}
+                        <div class="d-flex justify-content-left small text-warning mb-2">
+                            <div class="bi-star-fill"></div>
+                            <div class="bi-star-fill"></div>
+                            <div class="bi-star-fill"></div>
+                            <div class="bi-star-fill"></div>
+                            <div class="bi-star-fill"></div>
+                        </div>
+                        {% endif %}
+                        {% if product.hook_text %}
+                        <h6 class="text-muted"><small><mark>{{product.hook_text}}</mark></small></h6>
+                        {% endif %}
+                        <div class="fs-5 mb-5">
+                            {% if product.on_sale_price %}
+                            <span class="text-muted text-decoration-line-through"><del>{{product.product_price|intcomma}} KRW</del></span>
+                            <span>{{product.on_sale_price|intcomma}} KRW</span>
+                            {% else %}
+                            <span>{{product.product_price|intcomma}} KRW</span>
+                            {% endif %}
+                        </div>
+                        {% if product.tags.exists %}
+                        <div class="mb-2">
+                            <i class="fas fa-tag" style="color:#0d6efd"></i>
+                            {% for t in product.tags.iterator %}
+                            <span class="badge badge-pill badge-light">
+                                <a href="{{t.get_absolute_url}}">{{t}}</a>
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        <p class="lead">{{ product.description | linebreaksbr }}</p>
+                        <p class="lead mr-4">{{ product.get_content_markdown | safe | linebreaksbr }}</p>
+                        <div class="d-flex">
+                            {% if user.is_authenticated %}
+                            <form method="post" action="/product/cart/add/{{product.pk}}/" class="d-flex">
+                                {% csrf_token %}
+                                <input class="form-control text-center mr-1" name="inputQuantity" type="num" value="1" style="max-width: 3rem" />
+                                <button class="btn btn-outline-dark flex-shrink-0" type="submit">
+                                    <i class="bi-cart-fill me-1"></i>
+                                    Add to cart
+                                </button>
+                            </form>
+                            {% else %}
+                                <input class="form-control text-center mr-1" type="num" value="1" style="max-width: 3rem" />
+                                <a href="/product/cart/add/" class="btn btn-outline-dark flex-shrink-0" role="button"
+                                    data-toggle="modal" data-target="#loginModal">
+                                    <i class="bi-cart-fill me-1"></i>
+                                    Add to cart
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+        <div class="d-block py-1"></div>
+        <!-- Comments section-->
+             <div id="comment-area" class="bg-light pb-1">
+                 <div class="card border-0 my-5 px-5 py-4 pb-5 rounded-bottom" style="box-shadow: 0 25px 25px 0px #ddd;">
+                     <div class="card-body mx-5 px-5 pb-5">
+                         <!-- Comment form-->
+                         <div class="container">
+                             {% if user.is_authenticated %}
+                             <form id="comment-form" method="post"
+                                   action="{{product.get_absolute_url}}new_review/">
+                                 {% csrf_token %}
+                                 <div class="form-group">
+                                     {{ review_form | crispy }}
+                                 </div>
+                                 <button type="submit" class="btn btn-block btn-outline-dark float-right">Write a review</button>
+                             </form>
+                             {% else %}
+                                 <a role="button" class="btn btn-block btn-outline-dark mb-0 py-3 text-left text-top" href="#"
+                                    data-toggle="modal" data-target="#loginModal">
+                                     Join and leave your review!
+                                 </a>
+                             {% endif %}
+                         </div>
+                         <div class="d-block py-4"></div>
+                         <!-- Single comment-->
+                         <div class="container">
+                             {% if product.review_set.exists %}
+                             {% for review in product.review_set.iterator %}
+                             {% if review.parent_review == null %}
+                                 <div class="media d-flex mt-4" id="review_anchor_{{review.pk}}">
+                                     <img class="mr-3 float-top rounded-circle" src="{{review.get_avatar_url}}" alt="{{review.writer}}" width="60px"/>
+                                     <div class="media-body ms-3">
+                                         {% if user.is_authenticated and review.writer == user %}
+
+                                            <a role="button" class="btn btn-sm btn-outline-danger float-right"
+                                               data-toggle="modal" data-target="#deletionModal-{{review.pk}}"
+                                               href="">
+                                                Delete
+                                            </a>
+                                            <a role="button" class="btn btn-sm btn-outline-dark float-right mr-2"
+                                               href="/product/edit_review/{{review.pk}}">
+                                                Edit
+                                            </a>
+                                            <!-- Vertically centered modal -->
+                                            <div class="modal" id="deletionModal-{{review.pk}}" tabindex="-1">
+                                                <div class="modal-dialog modal-dialog-centered">
+                                                    <div class="modal-content">
+                                                      <div class="modal-header">
+                                                        <h5 class="modal-title">Are you sure?</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                          <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                      </div>
+                                                      <div class="modal-body">
+                                                          <p><span class="text-muted font-weight-light">{{ review.content | truncatewords:5 }}</span> will be deleted.</p>
+                                                      </div>
+                                                      <div class="modal-footer">
+                                                        <button type="button" class="btn btn-sm btn-outline-dark" data-dismiss="modal">Close</button>
+                                                        <a href="/product/delete_review/{{review.pk}}" role="button" class="btn btn-sm btn-outline-danger">
+                                                            Delete
+                                                        </a>
+                                                      </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                         {% endif %}
+                                         <div class="fw-bold">
+                                             {{review.writer.username}}
+                                             <small class="text-muted font-weight-lighter ml-1">{{review.created_at}}</small>
+                                         </div>
+                                         <h6 class="font-weight-light mt-1">{{review.content | linebreaks}}</h6>
+                                         <p class="small text-muted" data-toggle="collapse" href="#childComment{{review.pk}}" aria-expanded="false" aria-controls="collapseExample">
+                                             Reply({{review.review_set.count}})
+                                         </p>
+                                         <div class="collapse" id="childComment{{review.pk}}">
+                                             <form id="childComment-form" method="post"
+                                                   action="{{product.get_absolute_url}}{{review.pk}}/new_child_comment/">
+                                                 {% csrf_token %}
+                                                 <div class="form-group">
+                                                     <textarea class="form-control mr-1" name="commentContent" type="text" rows="3"></textarea>
+                                                 </div>
+                                                 <button type="submit" class="btn btn-sm btn-light btn-block float-right">Send</button>
+                                             </form>
+                                             {% for child in review.review_set.iterator %}
+                                             <div class="row">
+                                                 <div class="col-9 my-2">
+                                                     <p class="small m-0">
+                                                     {{child.writer}}<small class="font-weight-lighter ml-2">{{child.created_at}}</small>
+                                                     </p>
+                                                     <p class="small font-weight-light m-0">{{child.content}}</p>
+                                                 </div>
+                                                 {% if user.is_authenticated and child.writer == user %}
+                                                 <div class="col-3 my-2">
+                                                     <a role="button" class="small text-danger float-right"
+                                                       data-toggle="modal" data-target="#deletionModal-{{child.pk}}"
+                                                       href="">
+                                                        Delete
+                                                    </a>
+                                                 </div>
+                                                 <!-- Vertically centered modal -->
+                                                <div class="modal" id="deletionModal-{{child.pk}}" tabindex="-1">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <div class="modal-content">
+                                                          <div class="modal-header">
+                                                            <h5 class="modal-title">Are you sure?</h5>
+                                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                              <span aria-hidden="true">&times;</span>
+                                                            </button>
+                                                          </div>
+                                                          <div class="modal-body">
+                                                              <p><span class="text-muted font-weight-light">{{ child.content | truncatewords:5 }}</span> will be deleted.</p>
+                                                          </div>
+                                                          <div class="modal-footer">
+                                                            <button type="button" class="btn btn-sm btn-outline-dark" data-dismiss="modal">Close</button>
+                                                            <a href="/product/delete_review/{{child.pk}}" role="button" class="btn btn-sm btn-outline-danger">
+                                                                Delete
+                                                            </a>
+                                                          </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                 {% endif %}
+                                             </div>
+                                             {% endfor %}
+
+                                         </div>
+
+                                     </div>
+                                 </div>
+                             {% endif %}
+                             {% endfor %}
+                             {% else %}
+                                <p class="lead mt-5 pt-3 text-center">There's no review yet.</p>
+                             {% endif %}
+                         </div>
+
+                     </div>
+                 </div>
+             </div>
+
+
+
+        <!-- Related items section-->
+        <section class="pt-2 pb-5 bg-light">
+            <div class="container px-4 px-lg-5 mt-5">
+                <h2 class="fw-bolder mb-4">Related products</h2>
+                <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+                    {% if related_products_count != 0 %}
+                    {% for p in related_products %}
+                    {% if p != product %}
+                    <div class="col mb-5">
+                        <div class="card h-100">
+                            {% if user.is_superuser or user.is_staff %}
+                            <!-- Edit button -->
+                            <div class="border-top-0 position-absolute" style="opacity: 0.8;">
+                                {% if user == p.author %}
+                                <div class="text-center rounded bg-white" style="top: 0.5rem; left: 0.5rem">
+                                    <a class="btn btn-outline-primary mt-auto rounded-sm" href="/product/update_product/{{p.pk}}/">
+                                        <i class="fa-regular fa-pen-to-square"></i><small></small>
+                                    </a>
+                                </div>
+                                {% else %}
+                                <div class="text-center rounded bg-white" style="top: 0.5rem; left: 0.5rem">
+                                    <a class="btn btn-outline-primary mt-auto rounded-sm disabled" href="/product/update_product/{{p.pk}}/" >
+                                        <i class="fa-regular fa-pen-to-square"></i><small></small>
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            <!-- Product images-->
+                            {% if p.product_image %}
+                            <a href="{{p.get_absolute_url}}">
+                                <img class="card-img-top img-fluid mx-auto mb-2 d-block" style="width: auto; max-height: 280px;" src="{{p.product_image.url}}" alt="{{p}}의 product_image"/>
+                            </a>
+                            {% else %}
+                            <a href="{{p.get_absolute_url}}">
+                                <img class="card-img-top" src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" alt="..." />
+                            </a>
+                            {% endif %}
+                            <!-- Product details-->
+                            <div class="card-body pb-0">
+                                <div class="text-center">
+                                    <!-- Product name-->
+                                    <a href="{{p.get_absolute_url}}" class="text-reset text-decoration-none">
+                                        <h5 class="fw-bolder mt-1">{{p.title}}</h5>
+                                    </a>
+                                    {% if p.hook_text %}
+                                    <h6 class="text-muted"><small><mark>{{p.hook_text}}</mark></small></h6>
+                                    {% endif %}
+                                    <!-- Product reviews-->
+                                    {% if p.rating == 5 %}
+                                    <div class="d-flex justify-content-center small text-warning mb-2">
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                        <div class="bi-star-fill"></div>
+                                    </div>
+                                    {% endif %}
+                                    <!-- Product price-->
+                                    <a href="{{p.get_absolute_url}}" class="text-reset text-decoration-none">
+                                    {% if p.on_sale_price %}
+                                    <span class="text-muted text-decoration-line-through"><del>{{p.product_price|intcomma}} 원</del></span>
+                                    {{p.on_sale_price|intcomma}} 원
+                                    {% else %}
+                                    {{p.product_price|intcomma}} 원
+                                    {% endif %}
+                                    </a>
+                                </div>
+                            </div>
+                            <!-- Product actions-->
+                            {% if p.on_sale_price %}
+                            <div class="card-footer pb-4 pt-3 border-top-0 bg-transparent">
+                                <div class="text-center"><a tabindex="0" class="btn btn-sm btn-outline-dark mt-auto" data-trigger="focus" data-toggle="popover" data-placement="top" title="행사정보" data-content="이 상품은 현재 할인 중 이며 {{related_products_count}}개의 관련 상품이 있습니다!">View options</a></div>
+                            </div>
+                            {% elif p.hook_text %}
+                            <div class="card-footer pb-4 pt-3 border-top-0 bg-transparent">
+                                <div class="text-center"><a tabindex="0" class="btn btn-sm btn-outline-dark mt-auto" data-trigger="focus" data-toggle="popover" data-placement="top" title="Guarantee" data-content="이 상품은 신선함 또는 Animal Welfare를 보증하는 상품입니다!">View options</a></div>
+                            </div>
+                            {% else %}
+                            <div class="card-footer p-4 pt-3 border-top-0 bg-transparent">
+                                <div class="text-center"><a tabindex="0" class="btn btn-sm btn-outline-dark mt-auto" data-trigger="focus" data-toggle="popover" data-placement="top" title="행사정보" data-content="현재 진행 중인 행사가 없습니다.">View options</a></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                    {% else %}
+                        <p class="lead my-5">관련된 상품이 없습니다.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+{% endblock %}

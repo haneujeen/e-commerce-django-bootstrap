@@ -1,0 +1,132 @@
+{% load socialaccount %}
+<!-- Navigation-->
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow">
+            <div class="container mr-auto">
+                <div class="d-flex ">
+                    <a class="navbar-brand mr-2" href="/product/">Farmers' Market</a>
+                </div>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav mb-lg-0 ms-lg-4 ml-lg-2">
+                        <li class="nav-item"><a class="nav-link" href="/product/popular_items/">Popular Items</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/product/new_arrivals/">New Arrivals</a></li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" id="navbarDropdown2" role="button" data-toggle="dropdown" aria-expanded="false">Company</a>
+                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown2">
+                                {% for c in companies %}
+                                <li><a class="dropdown-item" href="{{c.get_absolute_url}}">{{c}}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav ml-auto mt-lg-auto mt-4 mb-lg-0 ms-lg-4">
+                        {% if user.is_superuser or user.is_staff %}
+                        {% include 'product/superuser_nav_items.html' %}
+                        {% endif %}
+                        <li class="nav-item">
+                            {% if user.is_authenticated %}
+                            <li class="nav-item dropdown dropdown-menu-right text-right d-lg-flex text-right">
+                                <a class="nav-link dropdown-toggle mt-1" id="userDropdown" role="button" data-toggle="dropdown" aria-expanded="false">
+                                    {% if user.socialaccount_set.all.0.get_avatar_url %}
+                                        <img class="rounded-circle mr-1" src="{{user.socialaccount_set.all.0.get_avatar_url}}" width="20px">
+                                    {% else %}
+                                        <img class="rounded-circle mr-1" src="https://dummyimage.com/50x50/ced4da/6c757d.jpg" width="20px">
+                                    {% endif %}
+                                    {{user.username}}
+                                </a>
+                                <ul class="dropdown-menu mb-3" aria-labelledby="navbarDropdown2">
+                                    <li><a class="dropdown-item" href="/product/user/{{user.username}}/">
+                                        My Account
+                                    </a></li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><a class="dropdown-item" href="/accounts/logout/">
+                                        Sign out
+                                    </a></li>
+                                </ul>
+                            </li>
+                            {% else %}
+                            <li class="nav-item d-lg-flex text-right ml-auto">
+                                <a class="nav-link mr-1 mb-2 mt-1 mb-md-2 mb-lg-0 text-primary" href="#" style="opacity: 0.75;"
+                                   data-toggle="modal" data-target="#loginModal">
+                                    Sign in
+                                </a>
+                            {% endif %}
+                            <form class="d-flex ml-auto float-sm-right">
+                                <a role="button" class="btn btn-outline-dark my-1" type="submit"
+                                    href="/product/cart/{{user.username}}/">
+                                    <i class="bi-cart-fill me-1"></i>
+                                    Cart
+                                    <span class="badge bg-dark text-white rounded-pill">{{ items_set_count }}</span>
+                                </a>
+                            </form>
+                        </li>
+
+                        <li class="nav-item mt-1 ml-auto ml-lg-2 mb-4 mb-lg-0">
+                            <div class="input-group">
+                                <div class="form-outline" style="max-width: 150px;">
+                                    <input type="search" id="search-input" class="form-control" placeholder="search"/>
+                                </div>
+                                <button type="button" class="btn btn-secondary ml-1" onclick="searchProduct()">
+                                    <i class="fas fa-search small"></i>
+                                </button>
+                            </div>
+                        </li>
+                        <script>
+                            function searchProduct(){
+                                query = document.getElementById('search-input').value.trim();
+                                if(query.length > 1){
+                                    location.href = "/product/search/" + query + "/";
+                                }
+                                else{
+                                    alert('(' + query + ') is too short.');
+                                }
+                            };
+
+                            document.getElementById('search-input').addEventListener(
+                                'keyup', function(event){
+                                    if(event.key === 'Enter'){
+                                        searchProduct();
+                                    }
+                                });
+                        </script>
+                    </li>
+            </ul>
+
+
+                </div>
+            </div>
+        </nav>
+        <!-- Modal-->
+        <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog  modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-light">
+                      <h6 class="modal-title" id="exampleModalLabel">Login with Google Account.</h6>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body bg-light">
+                        <div class="row">
+                            <div class="col d-flex flex-column align-items-center">
+                                <a href="{% provider_login_url 'google' %}" role="button" class="btn btn-outline-dark btn-block btn-sm">
+                                    <i class="fa-brands fa-google mr-1"></i> Sign in with Google
+                                </a>
+                                <a href="/accounts/login/" role="button" class="btn btn-outline-dark btn-block btn-sm">
+                                    <i class="fa-solid fa-envelope mr-1"></i> Sign in with Email
+                                </a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col text-center">
+                                <p class="small mt-3 mb-0 pb-0">or</p>
+                                <h6 class="text-primary font-weight-light"><a href="/accounts/signup/">Sign up</a></h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                      <button type="button" class="btn btn-outline-dark btn-sm m-0" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+          </div>

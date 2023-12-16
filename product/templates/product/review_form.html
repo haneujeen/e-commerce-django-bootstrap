@@ -1,0 +1,31 @@
+{% extends 'product/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block head_title %}
+    Edit Review
+{% endblock %}
+
+{% block main_area %}
+    <div class="container my-5">
+        <div class="row">
+            <div class="col">
+                <h3 class="font-weight-light">Edit Review</h3>
+            <hr>
+                <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form | crispy }}
+                <button type="submit" class="btn btn-light float-right mt-4">Submit</button>
+                <a href="/product/" role="button" class="btn btn-light float-right mx-2 mt-4">Back</a>
+                </form>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col" style="height: 210px;">
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+

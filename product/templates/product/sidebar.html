@@ -1,0 +1,48 @@
+<div class="d-none d-lg-block">
+    <!-- CategoryNav -->
+    <nav class="navbar navbar-expand-lg navbar-light justify-content-center p-0 m-0 shadow bg-white rounded-bottom" id="CategoryNav">
+    <ul class="navbar-nav">
+        {% for c in categories %}
+        <li class="nav-item align-middle">
+            <a class="nav-link"  href="{{c.get_absolute_url}}">
+                <span class="badge badge-light">{{c}} {{c.product_set.count}}</span>
+            </a>
+        </li>
+        {% endfor %}
+        {% if no_category_post_count %}
+        <li class="nav-item align-middle">
+            <a class="nav-link" href="product/category/no_category/">
+                Others<span class="badge badge-light">{{no_category_post_count}}</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+</div>
+
+<div class="d-lg-none">
+    <!-- CategoryNav -->
+    <nav class="navbar navbar-light justify-content-center p-0 m-0 shadow bg-white rounded-bottom">
+    <a class="text-dark my-1 mx-auto" data-toggle="collapse" data-target="#navbarText" aria-controls="navbarText"
+       aria-expanded="false" aria-label="Toggle navigation" style="text-align: center;">
+        Category</a>
+    <div class="collapse navbar-collapse" id="navbarText">
+    <ul class="navbar-nav" style="text-align: center;">
+        {% for c in categories %}
+        <li class="nav-item align-middle">
+            <a class="nav-link" href="{{c.get_absolute_url}}">
+                <span class="badge badge-light">{{c}} {{c.product_set.count}}</span>
+            </a>
+        </li>
+        {% endfor %}
+        {% if no_category_post_count %}
+        <li class="nav-item align-middle">
+            <a class="nav-link" href="product/category/no_category/">
+                Others<span class="badge badge-light">{{no_category_post_count}}</span>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+    </div>
+    </nav>
+</div>

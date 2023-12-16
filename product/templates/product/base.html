@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ko">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>{% block head_title %}Shop Homepage{% endblock %}</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Bootstrap icons-->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="{% static 'product/bootstrap-4.5.3-dist/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" media="screen"></link>
+        <link href="{% static 'product/css/style.css' %}" rel="stylesheet" type="text/css" media="screen"></link>
+        <script src="https://kit.fontawesome.com/637c68a387.js" crossorigin="anonymous"></script>
+    </head>
+    <body>
+
+        {% include 'product/navbar.html' %}
+        {% if product_edit_list %}
+            <div class="container my-5 small">
+                {% for p in product_edit_list %}
+                    {% if user.is_superuser or user == p.author %}
+                    <p><a href="/product/update_product/{{p.pk}}">{{p}}</a></p>
+                    {% else %}
+                    <p>{{p}}</p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+        {% else %}
+                {% block main_area %}
+                {% endblock %}
+        {% endif %}
+        {% include 'product/footer.html' %}
+
+        <!-- Bootstrap core JS-->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <!-- Core theme JS-->
+        <script src="{% static 'product/bootstrap-4.5.3-dist/js/bootstrap.bundle.min.js' %}"></script>
+        <script>
+            $(function () {
+                $('[data-toggle="popover"]').popover({
+                container: 'section'})
+            })
+        </script>
+        <script>
+            $('.popover-dismiss').popover({
+                trigger: 'focus'
+                container: 'section'
+            })
+        </script>
+    </body>
+</html>

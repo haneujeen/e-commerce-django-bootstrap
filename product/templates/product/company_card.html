@@ -1,0 +1,34 @@
+<div class="card mb-5">
+    <div class="card-body row align-items-center">
+        <div class="col-5 col-md-4 p-xs-3 p-sm-3 align-items-center">
+            {% if company.company_image %}
+            <img class="card-img mb-md-0 rounded" src="{{company.company_image.url}}" alt="{{company}}의 company_image"/>
+            {% else %}
+            <img class="card-img mb-md-0 rounded" src="https://dummyimage.com/200x200/bdbdbd/ffffff" alt="..." />
+            {% endif %}
+        </div>
+        <div class="col-7 col-md-8">
+            <h6><a href="{{product.category.get_absolute_url}}" class="text-reset text-decoration-none mb-0">
+                {{company.name|upper}}
+            </a></h6>
+            <div class="small mb-1"><a href="{{product.company.get_absolute_url}}" class="text-reset text-decoration-none">
+                {{company.address}}</a></div>
+            <h6 class="text-muted"><small><mark>{{company.contact}}</mark></small></h6>
+            <div class="fs-5">
+                <span class="d-none d-md-block">{{company.description}}</span>
+                <span class="d-md-none small">{{company.description | truncatechars:70 }}</span>
+            </div>
+            {% if product.tags.exists %}
+            <div class="mb-2">
+                <i class="fas fa-tag" style="color:#0d6efd"></i>
+                {% for t in product.tags.iterator %}
+                <span class="badge badge-pill badge-light">
+                    <a href="{{t.get_absolute_url}}">{{t}}</a>
+                </span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+<div class="d-block m-3"><br></div>

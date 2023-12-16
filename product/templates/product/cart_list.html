@@ -1,0 +1,170 @@
+{% extends 'product/base.html' %}
+{% load static %}
+{% load humanize %}
+{% block head_title %}Payment{% endblock %}
+{% block main_area %}
+    <header class="bg-image" style="height: 225px">
+        <div class="container">
+            <div class="container d-flex flex-column justify-content-center text-center text-white position-absolute"
+            style="width: 100%; height: 225px">
+                <h2 class="fw-bolder" style="opacity: 0.85;">Shopping Cart</h2>
+            </div>
+        </div>
+        <img class="bg-image h-100" src="{% static 'product/images/header_image.jpeg' %}"
+         style="width: 100%; object-fit: cover; object-position: 0 0%;">
+    </header>
+    <section class="h-100 h-custom">
+        <div class="container py-5 h-100">
+            <div class="row d-flex h-100">
+                <div class="col-lg-8 justify-content-center align-items-center">
+                    <div class="card shadow-lg">
+                        <div class="card-body p-4">
+                            <div class="row">
+                                <div class="col">
+                                    <h5 class="mb-3"><a href="/product/" class="text-body"><i
+                                          class="fas fa-long-arrow-alt-left mr-2"></i>Continue shopping</a></h5>
+                                    <hr>
+                                    <div class="d-flex justify-content-between align-items-center mb-4">
+                                        <div>
+                                            <p class="mb-1"><b>{{ cart.user | capfirst }}</b>'s Shopping cart</p>
+                                            <p class="mb-0">You have {{ items_set_count }} items in your cart</p>
+                                        </div>
+                                        <div>
+                                            <p class="mb-0"><span class="text-muted">Sort by:</span> <a href="#!"
+                                                class="text-body">price <i class="fas fa-angle-down mt-1"></i></a></p>
+                                        </div>
+                                    </div>
+                                    {% if items %}
+                                        {% for i in items %}
+                                        <div class="card mb-3">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between">
+                                                    <div class="d-flex flex-row align-items-center">
+                                                        <div>
+                                                            <img src="{{ i.item.product_image.url }}"
+                                                                class="img-fluid rounded-3 mr-2" alt="Shopping item" style="width: 65px;">
+                                                        </div>
+                                                        <div class="ms-3">
+                                                            <h5><a href="{{i.item.get_absolute_url}}" class="text-decoration-none text-reset">
+                                                                {{ i.item.title | truncatewords:6 }}</a></h5>
+                                                            <p class="small mb-0">{{ i.item.category }}, {{ i.item.company }}</p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="d-flex flex-row align-items-center">
+                                                        <div style="width: 45px;">
+                                                            <h5 class="fw-normal mb-0">{{ i.qty }}</h5>
+                                                        </div>
+                                                        <div style="width: 85px;">
+                                                            <h5 class="mb-0">{{ i.total_price | intcomma }} KRW</h5>
+                                                        </div>
+                                                        <a href="{% url 'removeItem' i.item.pk %}" class="text-primary" style="opacity: 0.6;"><i class="fas fa-trash-alt"></i></a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="d-block text-center my-5">
+                                        <p class="text-primary " style="opacity: 0.75;">Browse products</p>
+                                        <a href="/product/" class="small"> Order </a>
+                                        </div>
+                                    {% endif %}
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 sticky-top">
+                    <div class="card mt-4 mt-lg-0 sticky-top bg-white text-dark rounded-3 shadow-lg">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="mb-0">Card details</h5>
+
+                            </div>
+
+                            <p class="small mb-2">Card type</p>
+                            <a href="#!" type="submit" class="text-dark"><i
+                                class="fab fa-cc-mastercard fa-2x me-2"></i></a>
+                            <a href="#!" type="submit" class="text-dark"><i
+                                class="fab fa-cc-visa fa-2x me-2"></i></a>
+                            <a href="#!" type="submit" class="text-dark"><i
+                                class="fab fa-cc-amex fa-2x me-2"></i></a>
+                            <a href="#!" type="submit" class="text-dark"><i class="fab fa-cc-paypal fa-2x"></i></a>
+
+                            <form class="mt-4">
+                                <div class="form-outline form-white mb-3">
+                                    <input type="text" id="typeName" class="form-control form-control" siez="10"
+                                      placeholder="Cardholder's Name" />
+                                    <label class="form-label" for="typeName">Cardholder's Name</label>
+                                </div>
+
+                                <div class="form-outline form-white mb-3">
+                                    <input type="text" id="" class="form-control form-control"
+                                      placeholder="1234 5678 9012 3457" minlength="19" maxlength="19" />
+                                    <label class="form-label" for="typeText">Card Number</label>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="form-outline form-white">
+                                            <input type="text" id="typeExp" class="form-control form-control"
+                                              placeholder="MM/YYYY" size="7" id="exp" minlength="7" maxlength="7" />
+                                            <label class="form-label" for="typeExp">Expiration</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-outline form-white">
+                                            <input type="password" id="typeText" class="form-control form-control"
+                                              placeholder="&#9679;&#9679;&#9679;" size="1" minlength="3" maxlength="3" />
+                                            <label class="form-label" for="typeText">CVV</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        <hr class="my-3">
+                        <div class="d-flex justify-content-between">
+                            <p class="mb-2">Subtotal</p>
+                            <p class="mb-2">
+                                {% if cart.total_price.price %}
+                                {{ cart.total_price.price | intcomma }}
+                                {% else %}
+                                0
+                                {% endif %}
+                                KRW</p>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <p class="mb-2">Shipping</p>
+                            <p class="mb-2">20,000 KRW</p>
+                        </div>
+                        <div class="d-flex justify-content-between mb-4">
+                            <p class="mb-2">Total(Incl. taxes)</p>
+                            <p class="mb-2">
+                                {% if cart.total_price.price %}
+                                {{ cart.total_price.price | add:"20000" | intcomma }}
+                                {% else %}
+                                0
+                                {% endif %}
+                                KRW</p>
+                        </div>
+                        <button type="button" class="btn btn-dark btn-block">
+                            <div class="d-flex justify-content-between">
+                                <span>
+                                    {% if cart.total_price.price %}
+                                    {{ cart.total_price.price | add:"20000" | intcomma }}
+                                    {% else %}
+                                    0
+                                    {% endif %}
+                                    KRW</span>
+                                <span>Checkout <i class="fas fa-long-arrow-alt-right ms-2"></i></span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+
+

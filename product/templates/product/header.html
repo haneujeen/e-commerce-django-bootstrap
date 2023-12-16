@@ -1,0 +1,32 @@
+{% load static %}
+<!-- Header-->
+        <header class="bg-image" style="height: 400px">
+            <div class="container">
+                <div class="container d-flex flex-column justify-content-center text-center text-white position-absolute"
+                style="width: 100%; height: 400px">
+                    {% if category %}
+                    <h1 class="display-4 fw-bolder">Shop in {{category}}</h1>
+                    <p class="lead fw-normal text-white-50 mb-0">Products in {{category}}</p>
+                    {% elif popular_items.exists %}
+                    <h1 class="display-4 fw-bolder">Shop in Popular Items</h1>
+                    <p class="lead fw-normal text-white-50 mb-0">Popular Items</p>
+                    {% elif new_items.exists %}
+                    <h1 class="display-4 fw-bolder">Shop in New Arrivals</h1>
+                    <p class="lead fw-normal text-white-50 mb-0">New Arrivals</p>
+                    {% elif tag %}
+                    <h1 class="display-4 fw-bolder">Shop in Tag</h1>
+                    <p class="lead fw-normal text-white-50 mb-0">Products with {{tag}}</p>
+                    {% elif company %}
+                    <h1 class="display-4 fw-bolder">Shop in {{company}}</h1>
+                    <p class="lead fw-normal text-white-50 mb-0">{{company.product_set.count}} products from {{company}}</p>
+                    {% elif search_info %}
+                    <h2 class="display-4 fw-bolder">'{{q}}'</h2>
+                    <p class="lead fw-normal text-white-50 mb-0">{{search_info}}</p>
+                    {% else %}
+                    <h1 class="display-4 fw-bolder">{% block head_title %}Fresh Products{% endblock %}</h1>
+                    {% endif %}
+                </div>
+            </div>
+            <img class="bg-image h-100" src="{% static 'product/images/header_image.jpeg' %}"
+             style="width: 100%; object-fit: cover; object-position: 0 15%;">
+        </header>

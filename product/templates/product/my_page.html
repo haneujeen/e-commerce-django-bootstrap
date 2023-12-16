@@ -1,0 +1,67 @@
+{% extends 'product/base.html' %}
+{% load static %}
+{% load humanize %}
+{% block head_title %}Payment{% endblock %}
+{% block main_area %}
+    <header class="bg-image" style="height: 225px">
+        <div class="container">
+            <div class="container d-flex flex-column justify-content-center text-center text-white position-absolute"
+            style="width: 100%; height: 225px">
+                <h2 class="fw-bolder" style="opacity: 0.85;">My Account</h2>
+            </div>
+        </div>
+        <img class="bg-image h-100" src="{% static 'product/images/header_image.jpeg' %}"
+         style="width: 100%; object-fit: cover; object-position: 0 0%;">
+    </header>
+    <section class="h-100 h-custom">
+        <div class="container py-5 h-100">
+            <div class="row d-flex h-100">
+                <div class="col-lg-8">
+                    <p class="text-primary" data-toggle="collapse" data-target="#collapseExample"
+                       aria-expanded="false" aria-controls="collapseExample">My Account</p>
+                    <div class="collapse ml-3 mb-5" id="collapseExample">
+                        <p>User: {{user}}<br>
+                        Email:
+                            {% if user.email %}
+                                {{user.email}}
+                            {% else %}
+                                There's no email address registered.
+                        {% endif %}
+                        <br>
+                            <a href="/product/cart/{{user.username}}/">My Cart</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="row h-100">
+                <div class="col-lg-8">
+                    <p class="text-primary" data-toggle="collapse" data-target="#collapseExample2"
+                       aria-expanded="false" aria-controls="collapseExample">My Reviews</p>
+                    <div class="collapse" id="collapseExample2">
+                        {% if user.review_set.count != 0 %}
+                            {% for i in user.review_set.iterator %}
+                            <div class="card p-4 my-2">
+                                <a href="{{i.get_absolute_url}}" class="text-reset"><p class="mb-0">
+                                    {{i.product.title}}:
+                                </p>
+                                <p class="my-1 ml-3">
+                                    <i>{{i.content | linebreaksbr}}</i>
+                                </p></a>
+                                    <small class="text-muted">Created at {{i.created_at}}
+                                        <a href="{{i.product.get_absolute_url}}">See product</a>
+                                    </small>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                        <p>There's no review created.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="container" style="height: 220px"></div>
+        </div>
+    </section>
+{% endblock %}
+
+
+

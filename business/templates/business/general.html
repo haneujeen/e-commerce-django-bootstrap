@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+{% load humanize %}
+{% load static %}
+<html lang="ko">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Graphs from Bootstrap & Google</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Bootstrap icons-->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="{% static 'product/bootstrap-4.5.3-dist/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" media="screen"></link>
+        <script src="https://kit.fontawesome.com/637c68a387.js" crossorigin="anonymous"></script>
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    </head>
+    <style>
+        footer {
+            background-color: black;
+            margin-top: 60px;
+            bottom: 0;
+            width: 100%;
+        }
+
+        section {
+            margin-top: 50px;
+        }
+    </style>
+    <body>
+        {% include 'product/navbar.html' %}
+        {% if product_edit_list %}
+            <div class="container my-5 small">
+                {% for p in product_edit_list %}
+                    {% if user.is_superuser or user == p.author %}
+                    <p><a href="/product/update_product/{{p.pk}}">{{p}}</a></p>
+                    {% else %}
+                    <p>{{p}}</p>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Page Content-->
+        <section>
+            <div class="container px-4 px-lg-5">
+                <div class="row">
+                    <div class="col">
+                        <h1 class="mt-3">Bootstrap Charts</h1>
+                        <p>Graphs and charts with javascript, Chart.js, and Google Charts.</p>
+                        <div class="jumbotron bg-white shadow-lg">
+                            <canvas id="lgChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="row gx-4 gx-lg-5 mt-4">
+                    <div class="col">
+                        <h3 class="mt-1">Google charts examples</h3>
+                        <p>Click to open up a model with graphs</p>
+                    </div>
+                </div>
+
+                <div class="row gx-4 gx-lg-5">
+                    <div class="col-lg-4 mb-3 mb-lg-0">
+                        <div class="card shadow" data-toggle="modal" data-target="#ctxModal1">
+                            <div class="card-header bg-white">
+                                Products per Category
+                            </div>
+                            <div class="card-img-top pt-3 px-3">
+                                <table class="table table-bordered table-hover shadow-sm mb-0 pb-0">
+                                    {% for c in category_table %}
+                                    <tr>
+                                        <th class="font-weight-light">{{c}}</th>
+                                        <th class="text-center font-weight-light">{{c.product_set.count}}</th>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                            </div>
+                            <div class="card-body">
+                                To see the number of products for {{categories.count}} categories including
+                                {{categories.first}}, click on <span class='text-primary'>this card</span>.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mb-3 mb-lg-0">
+                        <div class="card shadow" data-toggle="modal" data-target="#ctxModal2">
+                            <div class="card-header bg-white">
+                                Products per Provider
+                            </div>
+                            <div class="card-img-top pt-3 px-3">
+                                <table class="table table-bordered table-hover shadow-sm mb-0 pb-0">
+                                    {% for c in company_table %}
+                                    <tr>
+                                        <th class="font-weight-light">{{c}}</th>
+                                        <th class="text-center font-weight-light">{{c.product_set.count}}</th>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                            </div>
+                            <div class="card-body">
+                                To see the number of products for each provider, click on
+                                <span class="text-primary">this card</span>.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 mb-3 mb-lg-0">
+                        <div class="card shadow" data-toggle="modal" data-target="#ctxModal3">
+                            <div class="card-header bg-white">
+                                Product Proportion
+                            </div>
+                            <div class="card-img-top pt-3 px-3">
+                                <table class="table table-bordered table-hover shadow-sm mb-0 pb-0">
+                                    {% for c in category_table %}
+                                    <tr>
+                                        <th class="font-weight-light">{{c}}</th>
+                                        <th class="text-center font-weight-light">{{c.product_set.count}}/{{product.count}}</th>
+                                    </tr>
+                                    {% endfor %}
+                                </table>
+                            </div>
+                            <div class="card-body">
+                                Click on <span class='text-primary'>this card</span> to see the proportion of all
+                                registered products.<br></br>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Modal -->
+        <div class="modal fade" id="ctxModal3" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Check the product ratio by category in a graph</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body pb-0">
+                  <div class="row d-flex justify-content-center">
+                      <div class="col pb-0">
+                          <div id="myChart3"></div>
+                      </div>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal fade" id="ctxModal2" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Check the number of products per provider in a graph</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body pb-0">
+                  <div class="row d-flex justify-content-center m-3">
+                      <div class="col pb-0">
+                          <div id="myChart2"></div>
+                      </div>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal fade" id="ctxModal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Check the number of products per category in a graph</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body pb-0">
+                  <div class="row d-flex justify-content-center m-3">
+                      <div class="col pb-0">
+                          <div id="myChart1"></div>
+                      </div>
+                  </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart -->
+        <script type="text/javascript">
+            google.charts.load('current', {'packages':['corechart']}).then(function (){
+                $("#ctxModal3").on('shown.bs.modal', drawChart)
+            });
+
+            function drawChart() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'Category');
+                data.addColumn('number', 'Number of Products');
+                data.addRows([
+                    ['Produce', 9],
+                    ['Meat', 6],
+                    ['Seafood', 1],
+                    ['Bread', 4],
+                    ['Water', 2],
+                    ['Snack', 1],
+                    ['Cheese & Eggs', 2]
+                ]);
+
+            var options = {
+                'title':'Number of Products per Category',
+                'width': '100%',
+                'height': 300,
+                colors: ['#003f5c', '#58508d', '#bc5090', '#ff6361', '#ffa600', '#ffd500', '#ffef12']
+            };
+
+            var chart = new google.visualization.PieChart(document.getElementById('myChart3'));
+            chart.draw(data, options);
+            window.addEventListener('resize', drawChart, false);
+            }
+
+            google.charts.load('current', {'packages':['bar']}).then(function (){
+                $("#ctxModal2").on('shown.bs.modal', drawChart2)
+            });
+
+              function drawChart2() {
+                  var data = google.visualization.arrayToDataTable([
+                        ['Category', 'Produce', 'Meat and Dairy', 'Bread', 'Water', 'Else', { role: 'annotation' } ],
+                        ['Food Market', 9, 7, 1, 2, 1, ''],
+                        ["Dave's Bread", 0, 0, 2, 0, 0, ''],
+                        ['Euro Classic Imports', 0, 0, 1, 0, 0, ''],
+                        ['Vital Farms', 0, 2, 0, 0, 0, '']
+                  ]);
+
+                  var options = {
+                    width: '100%',
+                    height: 300,
+                    legend: { position: 'top', maxLines: 3 },
+                    bar: { groupWidth: '75%' },
+                    isStacked: true,
+                    series: {
+                        0:{color:'#003f5c'},
+                        1:{color:'#58508d'},
+                        2:{color:'#bc5090'},
+                        3:{color:'#ff6361'},
+                        4:{color:'#ffa600'}
+                      }
+                  };
+
+                var chart = new google.charts.Bar(document.getElementById('myChart2'));
+                chart.draw(data, google.charts.Bar.convertOptions(options));
+                window.addEventListener('resize', drawChart2, false);
+            }
+
+            google.charts.load('current', {'packages':['corechart', 'bar']}).then(function (){
+                $("#ctxModal1").on('shown.bs.modal', drawBar)
+            });
+
+              function drawBar() {
+                  var data = google.visualization.arrayToDataTable([
+                        ['Category', 'Number of Products', { role: 'annotation' }, { role: 'style' }],
+                        ['Produce', 9, '', '#003f5c'],
+                        ['Meat', 6, '', '#58508d'],
+                        ['Seafood', 1, '', '#bc5090'],
+                        ['Bread', 4, '', '#ff6361'],
+                        ['Water', 2, '', '#ffa600']
+                  ]);
+
+                  var options = {
+                    width: '100%',
+                    height: 300,
+                    legend: { position: 'top', maxLines: 3 },
+                    bar: { groupWidth: '75%' },
+                    series: {
+                        0:{color:'#003f5c'},
+                        1:{color:'#58508d'},
+                        2:{color:'#bc5090'},
+                        3:{color:'#ff6361'},
+                        4:{color:'#ffa600'}
+                      }
+                  };
+
+                var chart = new google.visualization.BarChart(document.getElementById('myChart1'));
+                chart.draw(data, google.charts.Bar.convertOptions(options));
+                window.addEventListener('resize', drawBar, false);
+            }
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            const ctx = document.getElementById('lgChart');
+
+            const labels = ["2022", "'23", "'24", "'25", "'26", "'27", "'28", "'29"];
+            const data = {
+                labels: labels,
+                datasets: [{
+                        label: 'Produce',
+                        data: [9, 12, 11, 13, 16, 14, 16, 21],
+                        fill: true,
+                        borderColor: 'rgb(203, 235, 90)',
+                        backgroundColor: 'rgba(203, 235, 90, 0.2)',
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Meat',
+                        data: [6, 5, 8, 11, 10, 14, 13, 22],
+                        fill: true,
+                        borderColor: 'rgb(255, 191, 0)',
+                        backgroundColor: 'rgba(255, 191, 0, 0.2)',
+                        tension: 0.3
+                    },
+                    {
+                        label: 'Bread',
+                        data: [4, 7, 6, 8, 4, 11, 12, 16],
+                        fill: true,
+                        borderColor: 'rgb(255, 127, 80)',
+                        backgroundColor: 'rgba(255, 127, 80, 0.2)',
+                        tension: 0.3
+                    },
+                    ]
+                };
+
+            new Chart(ctx, {
+                 type: 'line',
+                 data: data,
+                 options: {
+                 responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Number of Products per Category'
+                        },
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            }
+                        },
+                        y: {
+                             beginAtZero: true
+                        }
+                     }
+                 }
+            });
+        </script>
+        {% include 'business/footer.html' %}
+        <!-- Bootstrap core JS-->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <!-- Core theme JS-->
+        <script src="{% static 'product/bootstrap-4.5.3-dist/js/bootstrap.bundle.min.js' %}"></script>
+    </body>
+</html>
